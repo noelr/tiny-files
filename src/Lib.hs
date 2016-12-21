@@ -13,7 +13,7 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BS
 import System.FilePath ((</>))
 
-go = scotty 3000 $ do
+go = scotty 4001 $ do
   middleware logStdoutDev
   get "/" $ file "./static/index.html"
   get "/download" $ do
