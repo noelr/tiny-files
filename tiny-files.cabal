@@ -1,7 +1,7 @@
 name:                tiny-files
 version:             1.0.0.0
 synopsis:            Upload and Download one file
-description:         Please see README
+description:         Please see README.md
 homepage:            https://github.com/noelr/tiny-files#readme
 license:             BSD3
 license-file:        LICENSE
@@ -10,7 +10,7 @@ maintainer:          noel@noelr.ch
 copyright:           2016 Noel Rohrbach
 category:            Web
 build-type:          Simple
-extra-source-files:  README
+extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
