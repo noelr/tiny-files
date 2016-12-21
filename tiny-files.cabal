@@ -1,16 +1,16 @@
 name:                tiny-files
-version:             0.1.0.0
-synopsis:            Initial project template from stack
-description:         Please see README.md
-homepage:            https://github.com/githubuser/tiny-files#readme
+version:             1.0.0.0
+synopsis:            Upload and Download one file
+description:         Please see README
+homepage:            https://github.com/noelr/tiny-files#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author name here
+author:              Noel Rohrbach
+maintainer:          noel@noelr.ch
+copyright:           2016 Noel Rohrbach
 category:            Web
 build-type:          Simple
-extra-source-files:  README.md
+extra-source-files:  README
 cabal-version:       >=1.10
 
 library
@@ -42,4 +42,4 @@ test-suite tiny-files-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/tiny-files
+  location: https://github.com/noelr/tiny-files
