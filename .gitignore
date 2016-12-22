@@ -1,3 +1,4 @@
 .stack-work/
 elm-package.json
 elm-stuff/
+static/main.js
