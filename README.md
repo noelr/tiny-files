@@ -1,8 +1,7 @@
 # build
 
 ```bash
-make client
-make server
+make
 ```
 
 # run
