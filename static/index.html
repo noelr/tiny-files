@@ -24,63 +24,59 @@
     border: 1px dashed gray;
   }
 </style>
-
-
-<a href="/download">Download</a>
-<div id="drop_zone">Drop files here</div>
-<div id="progress_bar"><div class="percent">0%</div></div>
-
+<div id="main"></div>
+<script src="main.js"></script>
 <script>
-  var progress = document.querySelector('.percent');
+  var node = document.getElementById('main');
+  var app = Elm.Main.embed(node);
 
-  function updateProgress(evt) {
-    // evt is an ProgressEvent.
-    if (evt.lengthComputable) {
-      var percentLoaded = Math.round((evt.loaded / evt.total) * 100);
-      // Increase the progress bar length.
-      if (percentLoaded < 100) {
-        progress.style.width = percentLoaded + '%';
-        progress.textContent = percentLoaded + '%';
+  app.ports.start.subscribe(function() {
+    start();
+  });
+
+  function start() {
+    function updateProgress(evt) {
+      // evt is an ProgressEvent.
+      if (evt.lengthComputable) {
+        var percentLoaded = Math.round((evt.loaded / evt.total) * 100);
+        if (percentLoaded < 100) {
+          app.ports.progress.send(percentLoaded);
+        }
       }
     }
-  }
 
-  function handleFileSelect(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
+    function handleFileSelect(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
 
-    // Reset progress indicator on new file selection.
-    progress.style.width = '0%';
-    progress.textContent = '0%';
+      var files = evt.dataTransfer.files;
+      var formData = new FormData();
+      var names = [];
+      for (var i = 0, f; f = files[i]; i++) {
+        formData.append('file', f);
+        names.push(f.name);
+      }
+      app.ports.drop.send(names);
 
-    var files = evt.dataTransfer.files;
-    var formData = new FormData();
-    for (var i = 0, f; f = files[i]; i++) {
-      formData.append('file', f);
+      // now post a new XHR request
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload');
+      xhr.onload = function () {
+        app.ports.done.send(xhr.status);
+      };
+      xhr.upload.onprogress = updateProgress;
+
+      xhr.send(formData);
     }
 
-    // now post a new XHR request
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/upload');
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        progress.style.width = '100%';
-        progress.textContent = '100%';
-      }
-    };
-    document.getElementById('progress_bar').className = 'loading';
-    xhr.upload.onprogress = updateProgress;
-
-    xhr.send(formData);
-  }
-
-  function handleDragOver(evt) {
+    function handleDragOver(evt) {
       evt.stopPropagation();
       evt.preventDefault();
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
 
-  var dropZone = document.getElementById('drop_zone');
-  dropZone.addEventListener('dragover', handleDragOver, false);
-  dropZone.addEventListener('drop', handleFileSelect, false);
+    var dropZone = document.getElementById('drop_zone');
+    dropZone.addEventListener('dragover', handleDragOver, false);
+    dropZone.addEventListener('drop', handleFileSelect, false);
+  }
 </script>

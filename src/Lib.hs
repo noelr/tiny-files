@@ -15,7 +15,8 @@ import System.FilePath ((</>))
 
 go = scotty 4001 $ do
   middleware logStdoutDev
-  get "/" $ file "./static/index.html"
+  get "/" $ file "static/index.html"
+  get "/main.js" $ file "static/main.js"
   get "/download" $ do
     setHeader "content-disposition" "attachment"
     file "static/file"
