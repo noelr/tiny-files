@@ -5,3 +5,6 @@ client:
 
 server:
 	stack build
+
+run:
+	stack exec tiny-files-exe

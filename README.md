@@ -1,16 +1,17 @@
 # build
 
 ```bash
-stack build
+make client
+make server
 ```
 
 # run
 ```bash
-stack exec tiny-files-exe
+make run
 ```
 
 # serve
 
 ```bash
-ssh -t server.com 'cd ~/tiny-files && stack exec tiny-files-exe'
+ssh -t server.com 'cd ~/tiny-files && make run'
 ```
