@@ -50,24 +50,45 @@ view : Model -> (Html Msg)
 view model =
   div []
     [ a [ href "/download" ] [ text "Download" ]
-    , div [ id "drop_zone" ] [ text "Drop files here" ]
-    , div [ id "progress_bar", class (classForProgressbar model.state) ]
-          [ div [ class "percent", style [ ("width", (toPercentString model.percentage)) ] ]
-                [ text (toPercentString model.percentage) ]
-          ]
+    , dropZone
+    , progressBar model
     ]
+
+
+progressBar : Model -> Html msg
+progressBar model =
+  div [ id "progress_bar"
+      , style [ ("margin", "10px 0")
+              , ("padding", "3px")
+              , ("border", "1px solid #000")
+              , ("font-size", "14px")
+              , ("clear", "both")
+              , ("opacity", (if model.state == Idle then "0" else "1.0"))
+              , ("-moz-transition", "opacity 1s linear")
+              , ("-o-transition", "opacity 1s linear")
+              , ("-webkit-transition", "opacity 1s linear")
+              ]
+      ]
+      [ div [ style [ ("width", (toPercentString model.percentage))
+                    , ("background-color", "#99ccff")
+                    , ("height", "auto")
+                    ]
+            ]
+            [ text (toPercentString model.percentage) ]
+      ]
+
+
+dropZone : Html msg
+dropZone =
+  div [ id "drop_zone"
+      , style [("width", "100%"), ("height", "300px"), ("border", "1px dashed gray")]
+      ]
+      [ text "Drop files here" ]
 
 
 toPercentString : Percentage -> String
 toPercentString percentage =
   (toString percentage) ++ "%"
-
-
-classForProgressbar : State -> String
-classForProgressbar state =
-  case state of
-    Idle -> ""
-    Loading -> "loading"
 
 
 port start : Int -> Cmd msg
