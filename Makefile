@@ -8,3 +8,7 @@ server:
 
 run:
 	stack exec tiny-files-exe
+
+deploy: client
+	@read -p "Deploy to: " server; \
+	scp static/main.js $$server:~/tiny-files/static/main.js

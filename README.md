@@ -12,5 +12,12 @@ make run
 # serve
 
 ```bash
-ssh -t server.com 'cd ~/tiny-files && make run'
+ssh -t example.com 'cd ~/tiny-files && make run'
+```
+
+# deploy elm output
+
+```bash
+make deploy
+Deploy to: example.com
 ```
