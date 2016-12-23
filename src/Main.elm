@@ -5,7 +5,7 @@ import Html.Attributes exposing (href, id, class, style)
 import Html.Events exposing (onClick, onWithOptions)
 import Http
 
-import Json.Decode as Decode exposing (Decoder, field, succeed)
+import Json.Decode as Decode exposing (Decoder, field)
 
 main : Program Never Model Msg
 main =
@@ -29,7 +29,12 @@ type alias Percentage = Int
 type State = Idle | Loading
 
 
-type Msg = Drop (List String) | Progess Percentage | Done HttpStatus | NewFiles (Result Http.Error (List ServerFile))
+type Msg = Drop (List String)
+  | Progess Percentage
+  | Done HttpStatus
+  | NewFiles (Result Http.Error (List ServerFile))
+  | DeleteFile ServerFile
+  | FileDeleted (Result Http.Error ())
 
 
 type alias Model = { state : State, percentage : Percentage, files : List ServerFile }
@@ -50,8 +55,16 @@ update msg model =
       ({ model | percentage = 100, state = Idle }, getFiles)
     NewFiles (Ok files) ->
       ({ model | files = files }, Cmd.none)
-
     NewFiles (Err error) ->
+      let
+        _ = Debug.log "Oops!" error
+      in
+        (model, Cmd.none)
+    DeleteFile file ->
+      (model, deleteFile file)
+    FileDeleted (Ok ()) ->
+      (model, getFiles)
+    FileDeleted (Err error) ->
       let
         _ = Debug.log "Oops!" error
       in
@@ -70,7 +83,14 @@ view model =
 filesUl : Model -> (Html Msg)
 filesUl model =
   ul []
-  (List.map (\l -> li [] [ a [href ("/download/" ++ l.name)] [ text l.name ] ]) model.files)
+  (List.map fileLi model.files)
+
+
+fileLi : ServerFile -> (Html Msg)
+fileLi file =
+  li [] [ a [ href ("/download/" ++ file.name) ] [ text file.name ]
+        , a [ style [("float", "right")], href "#", onClick (DeleteFile file) ] [ text "Delete" ]
+        ]
 
 
 progressBar : Model -> Html msg
@@ -109,16 +129,29 @@ toPercentString percentage =
   (toString percentage) ++ "%"
 
 
-filesUrl : String
-filesUrl =
-    "/files"
-
-
 getFiles : Cmd Msg
 getFiles =
     (Decode.list fileDecoder)
-        |> Http.get filesUrl
+        |> Http.get "/files"
         |> Http.send NewFiles
+
+
+deleteFile : ServerFile -> Cmd Msg
+deleteFile file =
+  Http.send FileDeleted (delete ("/delete/" ++ file.name) Http.emptyBody)
+
+
+delete : String -> Http.Body -> Http.Request ()
+delete url body =
+  Http.request
+    { method = "DELETE"
+    , headers = []
+    , url = url
+    , body = body
+    , expect = Http.expectStringResponse (\_ -> Ok ())
+    , timeout = Nothing
+    , withCredentials = False
+    }
 
 
 fileDecoder : Decoder ServerFile

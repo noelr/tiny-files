@@ -33,6 +33,10 @@ go = scotty 4001 $ do
     name <- param "file"
     setHeader "content-disposition" "attachment"
     file $ "download/" ++ name
+  delete "/delete/:file" $ do
+    name <- param "file"
+    liftIO $ removeFile $ "download/" ++ name
+    text "OK"
   post "/upload" $ do
       fs <- files
       let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
