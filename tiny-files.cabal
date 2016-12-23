@@ -1,6 +1,6 @@
 name:                tiny-files
 version:             1.0.0.0
-synopsis:            Upload and Download one file
+synopsis:            Upload and Download files
 description:         Please see README.md
 homepage:            https://github.com/noelr/tiny-files#readme
 license:             BSD3
