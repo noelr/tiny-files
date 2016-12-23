@@ -29,6 +29,9 @@ type alias Percentage = Int
 type State = Idle | Loading
 
 
+type alias ServerError = String
+
+
 type Msg = Drop (List String)
   | Progess Percentage
   | Done HttpStatus
@@ -37,11 +40,15 @@ type Msg = Drop (List String)
   | FileDeleted (Result Http.Error ())
 
 
-type alias Model = { state : State, percentage : Percentage, files : List ServerFile }
+type alias Model = { state : State
+                   , percentage : Percentage
+                   , files : List ServerFile
+                   , errors : List String
+                   }
 
 
 init : (Model, Cmd Msg)
-init = (Model Idle 0 [], Cmd.batch [start 0, getFiles])
+init = (Model Idle 0 [] [], Cmd.batch [start 0, getFiles])
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -56,28 +63,30 @@ update msg model =
     NewFiles (Ok files) ->
       ({ model | files = files }, Cmd.none)
     NewFiles (Err error) ->
-      let
-        _ = Debug.log "Oops!" error
-      in
-        (model, Cmd.none)
+      ({ model | errors = [(toString error)]}, Cmd.none)
     DeleteFile file ->
       (model, deleteFile file)
     FileDeleted (Ok ()) ->
       (model, getFiles)
     FileDeleted (Err error) ->
-      let
-        _ = Debug.log "Oops!" error
-      in
-        (model, Cmd.none)
+      ({ model | errors = [(toString error)]}, Cmd.none)
 
 
 view : Model -> (Html Msg)
 view model =
   div []
-    [ filesUl model
+    [ errors model.errors
+    , filesUl model
     , dropZone
     , progressBar model
     ]
+
+
+errors : List ServerError -> (Html Msg)
+errors es =
+  case es of
+    [] -> text ""
+    xs -> ul [] (List.map (\e -> li [] [ text e ]) xs)
 
 
 filesUl : Model -> (Html Msg)
