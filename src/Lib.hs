@@ -32,7 +32,7 @@ go = scotty 4001 $ do
   get "/download/:file" $ do
     name <- param "file"
     setHeader "content-disposition" "attachment"
-    file $ "static/" ++ name
+    file $ "download/" ++ name
   post "/upload" $ do
       fs <- files
       let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
