@@ -47,7 +47,7 @@ update msg model =
     Progess percentage ->
       ({ model | percentage = percentage }, Cmd.none)
     Done _ ->
-      ({ model | percentage = 100, state = Idle }, Cmd.none)
+      ({ model | percentage = 100, state = Idle }, getFiles)
     NewFiles (Ok files) ->
       ({ model | files = files }, Cmd.none)
 
