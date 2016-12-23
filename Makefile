@@ -6,7 +6,7 @@ client:
 server:
 	stack build
 
-run: client server
+run: server
 	stack exec tiny-files-exe
 
 deploy: client
