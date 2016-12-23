@@ -1,10 +1,11 @@
 port module Main exposing(..)
 
-import Html exposing (Html, Attribute, a, div, text)
+import Html exposing (Html, Attribute, a, div, text, ul, li)
 import Html.Attributes exposing (href, id, class, style)
 import Html.Events exposing (onClick, onWithOptions)
+import Http
 
-import Json.Decode as Json
+import Json.Decode as Decode exposing (Decoder, field, succeed)
 
 main : Program Never Model Msg
 main =
@@ -16,6 +17,9 @@ main =
     }
 
 
+type alias ServerFile = { name : String }
+
+
 type alias HttpStatus = Int
 
 
@@ -25,14 +29,14 @@ type alias Percentage = Int
 type State = Idle | Loading
 
 
-type Msg = Drop (List String) | Progess Percentage | Done HttpStatus
+type Msg = Drop (List String) | Progess Percentage | Done HttpStatus | NewFiles (Result Http.Error (List ServerFile))
 
 
-type alias Model = { state : State, percentage : Percentage }
+type alias Model = { state : State, percentage : Percentage, files : List ServerFile }
 
 
 init : (Model, Cmd Msg)
-init = (Model Idle 0, start 0)
+init = (Model Idle 0 [], Cmd.batch [start 0, getFiles])
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -44,15 +48,29 @@ update msg model =
       ({ model | percentage = percentage }, Cmd.none)
     Done _ ->
       ({ model | percentage = 100, state = Idle }, Cmd.none)
+    NewFiles (Ok files) ->
+      ({ model | files = files }, Cmd.none)
+
+    NewFiles (Err error) ->
+      let
+        _ = Debug.log "Oops!" error
+      in
+        (model, Cmd.none)
 
 
 view : Model -> (Html Msg)
 view model =
   div []
-    [ a [ href "/download" ] [ text "Download" ]
+    [ filesUl model
     , dropZone
     , progressBar model
     ]
+
+
+filesUl : Model -> (Html Msg)
+filesUl model =
+  ul []
+  (List.map (\l -> li [] [ a [href ("/download/" ++ l.name)] [ text l.name ] ]) model.files)
 
 
 progressBar : Model -> Html msg
@@ -89,6 +107,24 @@ dropZone =
 toPercentString : Percentage -> String
 toPercentString percentage =
   (toString percentage) ++ "%"
+
+
+filesUrl : String
+filesUrl =
+    "/files"
+
+
+getFiles : Cmd Msg
+getFiles =
+    (Decode.list fileDecoder)
+        |> Http.get filesUrl
+        |> Http.send NewFiles
+
+
+fileDecoder : Decoder ServerFile
+fileDecoder =
+    Decode.map ServerFile
+        (field "name" Decode.string)
 
 
 port start : Int -> Cmd msg
