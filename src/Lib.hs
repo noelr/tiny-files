@@ -21,25 +21,28 @@ import GHC.Generics
 data UserFile = UserFile { name :: FilePath } deriving (Show, Generic)
 instance ToJSON UserFile
 
+staticFile = (</>) "static"
+downloadFile = (</>) "download"
+
 go = scotty 4001 $ do
   middleware logStdoutDev
-  get "/" $ file "static/index.html"
+  get "/" $ file $ staticFile "index.html"
   get "/files" $ do
     f <- liftIO $ listDirectory "download"
     let fs = fmap UserFile f
     json fs
-  get "/main.js" $ file "static/main.js"
+  get "/main.js" $ file $ staticFile "main.js"
   get "/download/:file" $ do
     name <- param "file"
     setHeader "content-disposition" "attachment"
-    file $ "download/" ++ name
+    file $ downloadFile name
   delete "/delete/:file" $ do
     name <- param "file"
-    liftIO $ removeFile $ "download/" ++ name
+    liftIO $ removeFile $ downloadFile name
     text "OK"
   post "/upload" $ do
       fs <- files
       let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
       -- write the files to disk
-      liftIO $ sequence_ [ B.writeFile ("download/" ++ fn) fc | (_,fn,fc) <- fs' ]
+      liftIO $ sequence_ [ B.writeFile (downloadFile fn) fc | (_,fn,fc) <- fs' ]
       text "OK"
