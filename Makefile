@@ -4,10 +4,10 @@ client:
 	elm-make src/Main.elm --output static/main.js
 
 server:
-	stack build
+	nix-build shell.nix
 
 run: server
-	stack exec tiny-files-exe
+	result/bin/tiny-files-exe
 
 deploy: client
 	@read -p "Deploy to: " server; \
